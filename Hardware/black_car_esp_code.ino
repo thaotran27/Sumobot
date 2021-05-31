@@ -1,19 +1,25 @@
 #include <ESP8266WiFi.h> 
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include "mecanum_wheel_1.h"
 #define MAX_MSG_LEN (128)
 #define LED (2)
 
 const char* ssid = "RoboWifi";
 const char* password = "73333449";
-const char *serverHostname = "192.168.1.17";
+const char *serverHostname = "192.168.1.13";
 // const IPAddress serverIPAddress(192, 168, 1, 3);
 const char *topic = "raspberry/new";
 const char* mqtt_username = "sumobot";
 const char* mqtt_password = "sumobot";
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+/*New code starts*/
+unsigned long lastMsg = 0;
+char msg[MSG_BUFFER_SIZE];
+int value = 0;
+char data[80];
+/*New code ends*/
 
 StaticJsonDocument<60> jsonBuffer;
 // Motor A connections
@@ -299,6 +305,22 @@ static char message[MAX_MSG_LEN+1];
 //  } else if (strcmp(message, "on") == 0) {
 //    setLedState(true);
 //  }
+  
+  /* New code starts */
+  String value = "\"number\": " + String(analogRead(A0)) ;
+  String value2 = ", \"word\": \"Hello World\" " ;
+ 
+ // Add both value together to send as one string. 
+  value = value + value2;
+  
+  
+  // This sends off your payload. 
+  String payload = "{ \"devices\": \"*\",\"payload\": {" + value + "}}";
+  payload.toCharArray(data, (payload.length() + 1));
+  
+  client.publish("outtopic", data);
+  /* New code ends */
+  
 }
 
 void setLedState(boolean state) {
